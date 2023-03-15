@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# OpenAI API Key
+openai_api_key
+
+# Debug
+debug*
