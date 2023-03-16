@@ -4,7 +4,7 @@ This repository provides a simple web-based interface for ChatGPT. The interface
 
 # How to use
 
-To use this wrapper, you must have a valid OpenAI API key. You can obtain one from OpenAI [here](https://beta.openai.com/docs/api-key).
+To use this wrapper, you must have a valid OpenAI API key. You can obtain one from OpenAI [here](https://platform.openai.com/account/api-keys).
 
 Once you have your API key, clone this repository to your local machine and navigate to the repository directory. Put the key in the file `openai_api_key`.
 
