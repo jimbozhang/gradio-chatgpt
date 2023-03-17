@@ -1,7 +1,10 @@
+import re
+
 import gradio as gr
+from loguru import logger
+from openai.error import AuthenticationError, RateLimitError
 
 from chat_completion import ChatCompletion
-from openai.error import AuthenticationError, RateLimitError
 
 bot = ChatCompletion(api_key_path='./openai_api_key')
 
@@ -16,8 +19,11 @@ with gr.Blocks() as demo:
         if not user_message:
             return '', history
 
+        logger.info(f'[MSG] {user_message}')
+
         try:
             response = bot.chat(user_message) if user_message != 'retry' else bot.retry()
+            response = re.sub(r'^\n+', '', response)
         except AuthenticationError:
             response = '''Incorrect API key provided.
                 You can find your API key at https://platform.openai.com/account/api-keys,
@@ -27,16 +33,19 @@ with gr.Blocks() as demo:
                 That model is currently overloaded with other requests.
                 You may want to try clicking the "retry" botton.'''
 
+        logger.info(f'[ANS] {response}')
         return '', history + [[user_message, response]]
 
     def reset():
         bot.reset()
+        logger.info('[RESET]')
         return '', [['', '']]
 
     def retry(history):
         return send('retry', history)
 
-    send_btn.click(send, inputs=[msg, chatbot], outputs=[msg, chatbot], show_progress=True)
+    send_btn.click(send, inputs=[msg, chatbot], outputs=[msg, chatbot],
+                   show_progress=True, )
     reset_btn.click(reset, inputs=None, outputs=[msg, chatbot])
     retry_btn.click(retry, inputs=chatbot, outputs=[msg, chatbot])
 
