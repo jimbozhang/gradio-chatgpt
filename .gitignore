@@ -133,3 +133,5 @@ openai_api_key
 
 # Debug
 debug*
+.vscode/
+log.txt

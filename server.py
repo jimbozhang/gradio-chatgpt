@@ -1,5 +1,3 @@
-import re
-
 import gradio as gr
 from loguru import logger
 from openai.error import AuthenticationError, RateLimitError
@@ -7,6 +5,7 @@ from openai.error import AuthenticationError, RateLimitError
 from chat_completion import ChatCompletion
 
 bot = ChatCompletion(api_key_path='./openai_api_key')
+logger.add('log.txt')
 
 with gr.Blocks() as demo:
     chatbot = gr.Chatbot(show_label=False)
@@ -23,7 +22,6 @@ with gr.Blocks() as demo:
 
         try:
             response = bot.chat(user_message) if user_message != 'retry' else bot.retry()
-            response = re.sub(r'^\n+', '', response)
         except AuthenticationError:
             response = '''Incorrect API key provided.
                 You can find your API key at https://platform.openai.com/account/api-keys,

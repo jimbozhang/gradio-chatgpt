@@ -1,5 +1,6 @@
 import linecache
-from typing import Optional, List, Dict
+import re
+from typing import Dict, List, Optional
 
 import openai
 
@@ -41,4 +42,4 @@ class ChatCompletion:
         if model is None:
             model = self.model
         response = openai.ChatCompletion.create(model=model, messages=self._make_message())
-        return response['choices'][0]['message']['content']
+        return re.sub(r'^\n+', '', response['choices'][0]['message']['content'])
