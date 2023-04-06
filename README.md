@@ -20,21 +20,7 @@ To start the server, simply run the `server.py` file which can be done using the
 python server.py
 ```
 
-You can then access the service at http://127.0.0.1:7860 via any web browser.
-
-If you want to share your service with others, modify the last line of `server.py` as follows:
-
-
-```python
-# from
-demo.launch(share=False)
-
-# to
-demo.launch(share=True)
-```
-
-Then a public link would be generated, which expires in 72 hours.
-
+You can then access the service at http://127.0.0.1:7860 via any web browser. A public link would be also generated, which expires in 72 hours.
 
 # The wrapper of `openai.ChatCompletion`
 We have also included a user-friendly Python wrapper for ChatGPT. For example, you can use it in the following way:

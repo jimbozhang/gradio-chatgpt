@@ -1,6 +1,6 @@
 import gradio as gr
 from loguru import logger
-from openai.error import AuthenticationError, RateLimitError
+from openai.error import AuthenticationError, OpenAIError, RateLimitError
 
 from chat_completion import ChatCompletion
 
@@ -30,6 +30,10 @@ with gr.Blocks() as demo:
             response = '''openai.error.RateLimitError:
                 That model is currently overloaded with other requests.
                 You may want to try clicking the "retry" botton.'''
+        except OpenAIError as e:
+            response = e
+        except Exception as e:
+            logger.info(f'[ERR] {e}')
 
         logger.info(f'[ANS] {response}')
         return '', history + [[user_message, response]]
@@ -48,4 +52,4 @@ with gr.Blocks() as demo:
     retry_btn.click(retry, inputs=chatbot, outputs=[msg, chatbot])
 
 
-demo.launch(share=False)
+demo.launch(share=True)

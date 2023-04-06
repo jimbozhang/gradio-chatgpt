@@ -21,8 +21,10 @@ class ChatCompletion:
 
     def chat(self, msg: str, setting: Optional[str] = None, model: Optional[str] = None) -> str:
         if setting is not None:
-            self.system_messages.append(setting)
-        self.user_messages.append(msg)
+            if setting not in self.system_messages:
+                self.system_messages.append(setting)
+        if not self.user_messages or msg != self.user_messages[-1]:
+            self.user_messages.append(msg)
 
         return self._run(model)
 
@@ -43,3 +45,6 @@ class ChatCompletion:
             model = self.model
         response = openai.ChatCompletion.create(model=model, messages=self._make_message())
         return re.sub(r'^\n+', '', response['choices'][0]['message']['content'])
+
+    def __call__(self, msg: str, setting: Optional[str] = None, model: Optional[str] = None) -> str:
+        return self.chat(msg, setting, model)
