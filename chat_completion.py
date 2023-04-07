@@ -20,6 +20,8 @@ class ChatCompletion:
         self.user_messages = []
 
     def chat(self, msg: str, setting: Optional[str] = None, model: Optional[str] = None) -> str:
+        if self._context_length() > 2048:
+            self.reset()
         if setting is not None:
             if setting not in self.system_messages:
                 self.system_messages.append(setting)
@@ -40,11 +42,21 @@ class ChatCompletion:
         user_messages = [{'role': 'user', 'content': msg} for msg in self.user_messages]
         return sys_messages + user_messages
 
+    def _context_length(self) -> int:
+        return len(''.join(self.system_messages)) + len(''.join(self.user_messages))
+
     def _run(self, model: Optional[str] = None) -> str:
         if model is None:
             model = self.model
-        response = openai.ChatCompletion.create(model=model, messages=self._make_message())
-        return re.sub(r'^\n+', '', response['choices'][0]['message']['content'])
+        try:
+            response = openai.ChatCompletion.create(model=model, messages=self._make_message())
+            ans = response['choices'][0]['message']['content']
+            ans = re.sub(r'^\n+', '', ans)
+        except openai.error.OpenAIError as e:
+            ans = e
+        except Exception as e:
+            print(e)
+        return ans
 
     def __call__(self, msg: str, setting: Optional[str] = None, model: Optional[str] = None) -> str:
         return self.chat(msg, setting, model)

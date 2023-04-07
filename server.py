@@ -1,15 +1,25 @@
+import argparse
+
 import gradio as gr
 from loguru import logger
-from openai.error import AuthenticationError, OpenAIError, RateLimitError
 
 from chat_completion import ChatCompletion
 
-bot = ChatCompletion(api_key_path='./openai_api_key')
-logger.add('log.txt')
+parser = argparse.ArgumentParser()
+parser.add_argument('--api_key_path', type=str, default='./openai_api_key')
+parser.add_argument('--log_path', type=str, default='./log.txt')
+parser.add_argument('--share', action='store_true', default=False)
+parser.add_argument('--welcome', type=str, default='Say something to ChatGPT here ...')
+parser.add_argument('--title', type=str, default='ChatGPT')
+parser.add_argument('--setting', type=str, default=None)
+args = parser.parse_args()
 
-with gr.Blocks() as demo:
+bot = ChatCompletion(api_key_path=args.api_key_path)
+logger.add(args.log_path)
+
+with gr.Blocks(title=args.title) as demo:
     chatbot = gr.Chatbot(show_label=False)
-    msg = gr.TextArea(show_label=False, placeholder='Say something to ChatGPT here ...')
+    msg = gr.TextArea(show_label=False, placeholder=args.welcome)
     send_btn = gr.Button('Send')
     retry_btn = gr.Button('Retry')
     reset_btn = gr.Button('Reset')
@@ -19,22 +29,7 @@ with gr.Blocks() as demo:
             return '', history
 
         logger.info(f'[MSG] {user_message}')
-
-        try:
-            response = bot.chat(user_message) if user_message != 'retry' else bot.retry()
-        except AuthenticationError:
-            response = '''Incorrect API key provided.
-                You can find your API key at https://platform.openai.com/account/api-keys,
-                and make sure it has been put in `./openai_api_key` of the server.'''
-        except RateLimitError:
-            response = '''openai.error.RateLimitError:
-                That model is currently overloaded with other requests.
-                You may want to try clicking the "retry" botton.'''
-        except OpenAIError as e:
-            response = e
-        except Exception as e:
-            logger.info(f'[ERR] {e}')
-
+        response = bot(user_message, setting=args.setting) if user_message != 'retry' else bot.retry()
         logger.info(f'[ANS] {response}')
         return '', history + [[user_message, response]]
 
@@ -46,10 +41,9 @@ with gr.Blocks() as demo:
     def retry(history):
         return send('retry', history)
 
-    send_btn.click(send, inputs=[msg, chatbot], outputs=[msg, chatbot],
-                   show_progress=True, )
+    send_btn.click(send, inputs=[msg, chatbot], outputs=[msg, chatbot], show_progress=True)
     reset_btn.click(reset, inputs=None, outputs=[msg, chatbot])
     retry_btn.click(retry, inputs=chatbot, outputs=[msg, chatbot])
 
 
-demo.launch(share=True)
+demo.launch(share=args.share)
