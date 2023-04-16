@@ -36,7 +36,7 @@ with gr.Blocks(title=args.title) as demo:
     def reset():
         bot.reset()
         logger.info('[RESET]')
-        return '', [['', '']]
+        return None, [[None, None]]
 
     def retry(history):
         return send('retry', history)
